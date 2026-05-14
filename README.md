@@ -1,73 +1,126 @@
-# Decentralized Insurance Pool Protocol
+# DeFi Protocol Development — Assignment 2
 
-> Blockchain Technologies 2 — Final Project | Option E
+This project implements a comprehensive DeFi protocol suite including an Automated Market Maker (AMM), a lending/borrowing protocol, and professional testing infrastructure using Foundry.
 
-## Overview
+## Project Structure
 
-A decentralized insurance pool protocol where underwriters deposit collateral into an ERC-4626 vault to earn premium yield, and policyholders purchase insurance policies represented as ERC-1155 NFTs. The protocol uses Chainlink oracles for triggering insurance events and is governed by a DAO with an OpenZeppelin Governor stack and a 2-day Timelock.
+```
+├── src/
+│   ├── SimpleERC20.sol          # ERC-20 token implementation
+│   ├── LPToken.sol              # LP token for AMM liquidity
+│   ├── ConstantProductAMM.sol   # Constant product AMM (x*y=k)
+│   └── LendingPool.sol          # Lending/borrowing protocol
+├── test/
+│   ├── SimpleERC20.t.sol        # ERC-20 unit, fuzz, and invariant tests
+│   ├── ForkTest.t.sol           # Mainnet fork tests
+│   ├── ConstantProductAMM.t.sol # AMM test suite (25+ tests)
+│   └── LendingPool.t.sol        # Lending pool test suite (20+ tests)
+├── script/                       # Deployment scripts
+├── docs/
+│   ├── fuzz-vs-unit-testing.md  # Fuzz vs unit testing comparison
+│   ├── fork-testing.md          # Fork testing analysis
+│   ├── amm-mathematical-analysis.md  # AMM math derivation
+│   ├── cicd-documentation.md    # CI/CD pipeline docs
+│   └── lending-pool-workflow.html    # Workflow diagram
+├── .github/workflows/
+│   └── test.yml                 # GitHub Actions CI/CD
+└── foundry.toml                 # Foundry configuration
+```
 
-The protocol features a lending-pool-style collateral system with LTV ratios, health factors, and liquidation mechanics, ensuring the pool remains solvent at all times.
+## Prerequisites
 
-## Architecture
-
-See `docs/architecture.md` for full architecture documentation (C4 diagrams, sequence diagrams, storage layout, ADRs).
-
-## Contracts
-
-| Contract | Description |
-|---|---|
-| `GovernanceToken` | ERC20Votes + ERC20Permit governance token (IDAO) |
-| `PolicyNFT` | ERC-1155 policy tokens (one tokenId per policy type) |
-| `PolicyFactory` | CREATE + CREATE2 factory for deploying policy type contracts |
-| `UnderwriterVault` | ERC-4626 vault for underwriter collateral and premium yield |
-| `CollateralManager` | Lending-pool: LTV, health factor, liquidation |
-| `InsurancePool` | UUPS upgradeable core protocol (V1 + V2) |
-| `ChainlinkOracleAdapter` | Chainlink price feed with staleness validation |
-| `ClaimProcessor` | Automated claim payouts (CEI + ReentrancyGuard) |
-| `InsuranceGovernor` | OpenZeppelin Governor (1d delay, 1w period, 4% quorum) |
-| `TimelockController` | 2-day delay, controls treasury |
-| `PremiumMath` | Yul assembly fixed-point premium calculations |
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed
+- (Optional) RPC URL for fork testing
 
 ## Quick Start
 
+### Install Foundry
+
 ```bash
-git clone <repo-url>
-cd blockchain2-final
-forge install
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
+### Build Contracts
+
+```bash
 forge build
-forge test
 ```
 
-## Environment Setup
+### Run Tests
 
 ```bash
-cp .env.example .env
-# Fill in your private key, RPC URL, and API keys
+forge test -vvv
 ```
 
-## Deployment
+### Run with Fork Tests
 
 ```bash
-# Deploy to Arbitrum Sepolia
-make deploy-arbitrum
+# Set your RPC URL
+export MAINNET_RPC_URL="https://eth-mainnet.alchemyapi.io/v2/YOUR_KEY"
 
-# Verify deployment
-make verify-deployment
+forge test --match-contract ForkTest -vvv
 ```
 
-## Test Coverage
+### Generate Coverage Report
 
 ```bash
-make coverage
-# See reports/coverage.md
+forge coverage
 ```
 
-## Security
+### Generate Gas Report
 
-See `docs/audit-report.md` for the internal security audit report.
+```bash
+forge test --gas-report -vvv
+```
+
+## Contract Overview
+
+### SimpleERC20
+Standard ERC-20 token with `mint`, `transfer`, `approve`, and `transferFrom` functions.
+
+### ConstantProductAMM
+Implements a Uniswap V2-style AMM:
+- **addLiquidity()**: Deposit both tokens, receive LP tokens
+- **removeLiquidity()**: Burn LP tokens, receive proportional reserves
+- **swap()**: Trade tokens using constant product formula with 0.3% fee
+- **getAmountOut()**: Calculate expected output for a given input
+
+### LendingPool
+Implements a lending/borrowing protocol:
+- **deposit()**: Deposit collateral
+- **borrow()**: Borrow against collateral (max 75% LTV)
+- **repay()**: Repay borrowed amount
+- **withdraw()**: Withdraw collateral (if health factor > 1)
+- **liquidate()**: Liquidate undercollateralized positions
+
+## Testing Summary
+
+| Contract | Unit Tests | Fuzz Tests | Invariant Tests | Fork Tests | Total |
+|----------|-----------|------------|-----------------|------------|-------|
+| SimpleERC20 | 18 | 3 | 3 | — | 24 |
+| AMM | 20 | 2 | 1 | — | 23 |
+| LendingPool | 20 | — | — | — | 20 |
+| Fork Tests | — | — | — | 3 | 3 |
 
 ## Documentation
 
-- Architecture: `docs/architecture.md`
-- Audit Report: `docs/audit-report.md`
-- Gas Report: `docs/gas-optimization.md`
+- [Fuzz Testing vs Unit Testing](docs/fuzz-vs-unit-testing.md)
+- [Fork Testing Analysis](docs/fork-testing.md)
+- [AMM Mathematical Analysis](docs/amm-mathematical-analysis.md)
+- [CI/CD Pipeline Documentation](docs/cicd-documentation.md)
+- [Lending Pool Workflow Diagram](docs/lending-pool-workflow.html)
+
+## CI/CD Pipeline
+
+The project includes a GitHub Actions pipeline that:
+1. Installs Foundry
+2. Compiles contracts
+3. Runs all tests
+4. Generates gas reports
+5. Measures test coverage
+6. Runs Slither static analysis
+
+## Author
+
+Blockchain Technologies 2 — Assignment 2 Submission
