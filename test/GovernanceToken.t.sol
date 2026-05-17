@@ -197,6 +197,8 @@ contract GovernanceTokenTest is Test {
     }
 
     function test_Delegate_PastVotesCheckpoint() public {
+        vm.warp(1000);
+
         // Arrange
         vm.prank(deployer);
         token.transfer(alice, 3000e18);
@@ -204,15 +206,15 @@ contract GovernanceTokenTest is Test {
         vm.prank(alice);
         token.delegate(alice);
 
-        uint256 snapshotBlock = block.number;
-        vm.roll(snapshotBlock + 1);
+        uint256 snapshotTime = block.timestamp;
+        vm.warp(snapshotTime + 1);
 
         // Act: transfer more after checkpoint
         vm.prank(deployer);
         token.transfer(alice, 2000e18);
 
-        // Assert: past votes at snapshotBlock reflect the earlier balance
-        assertEq(token.getPastVotes(alice, snapshotBlock), 3000e18);
+        // Assert: past votes at snapshotTime reflect the earlier balance
+        assertEq(token.getPastVotes(alice, snapshotTime), 3000e18);
         // Current votes reflect new balance
         assertEq(token.getVotes(alice), 5000e18);
     }

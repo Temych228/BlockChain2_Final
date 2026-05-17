@@ -40,6 +40,23 @@ contract GovernanceToken is ERC20, ERC20Burnable, ERC20Permit, ERC20Votes, Ownab
     }
 
     // ──────────────────────────────────────────────────────────────
+    // EIP-6372: Timestamp-based clock mode
+    // ──────────────────────────────────────────────────────────────
+
+    /// @notice Returns the current block timestamp as the governance clock.
+    /// @dev Overrides the default block-number clock to enable timestamp-based voting
+    ///      checkpoints. Required for L2 compatibility where block times are variable.
+    function clock() public view override returns (uint48) {
+        return uint48(block.timestamp);
+    }
+
+    /// @notice Machine-readable description of the clock per EIP-6372.
+    /// @return The clock mode string indicating timestamp-based operation.
+    function CLOCK_MODE() public pure override returns (string memory) {
+        return "mode=timestamp";
+    }
+
+    // ──────────────────────────────────────────────────────────────
     // Required overrides for ERC20 + ERC20Votes diamond
     // ──────────────────────────────────────────────────────────────
 
