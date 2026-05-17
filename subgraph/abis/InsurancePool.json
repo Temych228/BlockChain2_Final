@@ -1,0 +1,38 @@
+[
+  {
+    "type": "event",
+    "name": "PolicyPurchased",
+    "inputs": [
+      { "name": "policyId", "type": "uint256", "indexed": true },
+      { "name": "holder", "type": "address", "indexed": true },
+      { "name": "policyTypeId", "type": "uint256", "indexed": false },
+      { "name": "coverageAmount", "type": "uint256", "indexed": false },
+      { "name": "premium", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PolicyTriggered",
+    "inputs": [
+      { "name": "policyId", "type": "uint256", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ClaimProcessed",
+    "inputs": [
+      { "name": "policyId", "type": "uint256", "indexed": true },
+      { "name": "holder", "type": "address", "indexed": true },
+      { "name": "payoutAmount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PolicyTypeAdded",
+    "inputs": [
+      { "name": "typeId", "type": "uint256", "indexed": true },
+      { "name": "maxCoverage", "type": "uint256", "indexed": false },
+      { "name": "riskMultiplier", "type": "uint256", "indexed": false }
+    ]
+  }
+]

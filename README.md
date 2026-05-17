@@ -1,126 +1,192 @@
-# DeFi Protocol Development — Assignment 2
+# Decentralized Insurance Pool Protocol (InsureDAO)
 
-This project implements a comprehensive DeFi protocol suite including an Automated Market Maker (AMM), a lending/borrowing protocol, and professional testing infrastructure using Foundry.
+> Blockchain Technologies 2 — Final Project | Option E
+
+## Overview
+
+InsureDAO is a fully on-chain decentralized insurance protocol built on Arbitrum Sepolia. It enables users to purchase insurance policies against stablecoin depeg events, liquidation risks, and smart contract exploits, while allowing underwriters to earn yield by providing collateral to the risk pool.
+
+The protocol features a complete governance system powered by the IDAO token, where token holders can propose, vote on, and execute changes to protocol parameters and treasury operations through a TimelockController. All contracts are written in Solidity 0.8.24, tested with 173+ Foundry tests (96.1% line coverage), and designed for L2 deployment with EIP-6372 timestamp-based voting.
+
+## Architecture
+
+The protocol consists of interconnected smart contracts following a modular design:
+
+- **InsurancePool** (UUPS Proxy) — Core orchestrator managing policy lifecycle
+- **UnderwriterVault** (ERC-4626) — Tokenized vault for underwriter deposits + premium yield
+- **CollateralManager** — Lending-pool-style collateral with LTV, health factor, and liquidation
+- **PolicyNFT** (ERC-1155) — Semi-fungible tokens representing insurance policies
+- **GovernanceToken** (ERC-20 + Votes) — IDAO token with delegation and permit
+- **InsuranceGovernor** — Full OpenZeppelin Governor stack with timelock
+- **InsuranceTreasury** — Protocol fee treasury controlled by governance
+- **PremiumMath** — Premium calculation library with inline Yul assembly
+
+See [docs/architecture.md](docs/architecture.md) for detailed diagrams and design decisions.
+
+## Deployed Contracts (Arbitrum Sepolia)
+
+| Contract | Address | Verified |
+|---|---|---|
+| InsurancePool (Proxy) | `TBD` | - |
+| UnderwriterVault | `TBD` | - |
+| CollateralManager | `TBD` | - |
+| PolicyNFT | `TBD` | - |
+| GovernanceToken (IDAO) | `TBD` | - |
+| InsuranceGovernor | `TBD` | - |
+| TimelockController | `TBD` | - |
+| InsuranceTreasury | `TBD` | - |
+
+> Deploy with `make deploy-arbitrum` and fill in addresses after deployment.
+
+## Quick Start
+
+```bash
+# Clone and install
+git clone <repo-url>
+cd BlockChain2_Final
+forge install
+
+# Build
+forge build
+
+# Run tests
+forge test
+
+# Run tests with verbosity
+forge test -vvv
+```
+
+## Environment Setup
+
+```bash
+cp .env.example .env
+# Fill in your values:
+#   PRIVATE_KEY — deployer wallet private key
+#   ARBITRUM_SEPOLIA_RPC — RPC endpoint
+#   ARBISCAN_API_KEY — for contract verification
+```
+
+## Deployment
+
+```bash
+# Deploy all contracts to Arbitrum Sepolia
+make deploy-arbitrum
+
+# Verify deployment configuration
+make verify-deployment
+```
+
+## Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+# Open http://localhost:5173
+```
+
+Features:
+- MetaMask + WalletConnect integration
+- Purchase insurance policies (USDC approval + policy purchase)
+- Deposit collateral as underwriter
+- Governance: view proposals, cast votes, delegate tokens
+- Real-time protocol stats via The Graph subgraph
+
+## Subgraph
+
+```bash
+cd subgraph
+npm install
+npm run codegen
+npm run build
+npm run deploy
+```
+
+Indexed entities: Policy, UnderwriterPosition, Claim, GovernanceProposal, ProtocolStats.
+See [subgraph/queries.graphql](subgraph/queries.graphql) for 5 documented GraphQL queries.
+
+## Test Suite
+
+```bash
+# All tests (unit + fuzz + invariant)
+forge test
+
+# Gas benchmarks
+make gas-report
+
+# Coverage report
+make coverage
+# See reports/coverage.md
+```
+
+| Category | Count | Target |
+|---|---|---|
+| Unit tests | 129 | ≥50 |
+| Fuzz tests | 21 | ≥10 |
+| Invariant tests | 5 | ≥5 |
+| Fork tests | 7 | ≥3 |
+| **Total** | **173+** | **≥80** |
+| **Line coverage** | **96.1%** | **≥90%** |
+
+## Security
+
+See [docs/audit-report.md](docs/audit-report.md) for the internal security audit report.
+
+Key security patterns:
+- CEI (Checks-Effects-Interactions) in all state-changing functions
+- `ReentrancyGuard` on all external entry points
+- `SafeERC20` for all token interactions
+- Custom errors (no string reverts)
+- Role-based access control (`AccessControl` / `Ownable2Step`)
+- Emergency pause via `Pausable`
+- ERC-4626 rounding convention (deposit rounds DOWN, withdraw rounds UP)
+- UUPS upgrade restricted to `DEFAULT_ADMIN_ROLE`
+- Storage gap (`__gap[43]`) for upgrade safety
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Architecture diagrams, storage layout, ADRs |
+| [docs/audit-report.md](docs/audit-report.md) | Security audit with 9 findings |
+| [docs/gas-optimization.md](docs/gas-optimization.md) | Gas benchmarks and optimization analysis |
+| [reports/coverage.md](reports/coverage.md) | Test coverage report |
+| [reports/gas-comparison.md](reports/gas-comparison.md) | L1 vs L2 gas comparison |
 
 ## Project Structure
 
 ```
-├── src/
-│   ├── SimpleERC20.sol          # ERC-20 token implementation
-│   ├── LPToken.sol              # LP token for AMM liquidity
-│   ├── ConstantProductAMM.sol   # Constant product AMM (x*y=k)
-│   └── LendingPool.sol          # Lending/borrowing protocol
-├── test/
-│   ├── SimpleERC20.t.sol        # ERC-20 unit, fuzz, and invariant tests
-│   ├── ForkTest.t.sol           # Mainnet fork tests
-│   ├── ConstantProductAMM.t.sol # AMM test suite (25+ tests)
-│   └── LendingPool.t.sol        # Lending pool test suite (20+ tests)
+BlockChain2_Final/
+├── src/                          # Production contracts
+│   ├── InsurancePool.sol         # Core UUPS-upgradeable pool
+│   ├── InsurancePoolV2.sol       # V2 upgrade
+│   ├── UnderwriterVault.sol      # ERC-4626 vault
+│   ├── CollateralManager.sol     # Lending-pool collateral
+│   ├── PolicyNFT.sol             # ERC-1155 policy tokens
+│   ├── GovernanceToken.sol       # IDAO governance token
+│   ├── PolicyFactory.sol         # CREATE/CREATE2 factory
+│   ├── governance/               # Governor + Treasury
+│   ├── libraries/                # PremiumMath (Yul)
+│   └── interfaces/               # IOracle, ICollateralManager, etc.
+├── test/                         # Test suite
+│   ├── unit/                     # Extended unit tests
+│   ├── fuzz/                     # Fuzz tests
+│   ├── invariant/                # Invariant tests + handler
+│   ├── fork/                     # Fork tests (Arbitrum)
+│   ├── governance/               # Governance lifecycle tests
+│   └── gas/                      # Gas benchmark tests
 ├── script/                       # Deployment scripts
-├── docs/
-│   ├── fuzz-vs-unit-testing.md  # Fuzz vs unit testing comparison
-│   ├── fork-testing.md          # Fork testing analysis
-│   ├── amm-mathematical-analysis.md  # AMM math derivation
-│   ├── cicd-documentation.md    # CI/CD pipeline docs
-│   └── lending-pool-workflow.html    # Workflow diagram
-├── .github/workflows/
-│   └── test.yml                 # GitHub Actions CI/CD
-└── foundry.toml                 # Foundry configuration
+├── subgraph/                     # The Graph subgraph
+├── frontend/                     # React dApp
+├── docs/                         # Documentation
+└── reports/                      # Coverage + gas reports
 ```
 
-## Prerequisites
+## Tech Stack
 
-- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed
-- (Optional) RPC URL for fork testing
-
-## Quick Start
-
-### Install Foundry
-
-```bash
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-```
-
-### Build Contracts
-
-```bash
-forge build
-```
-
-### Run Tests
-
-```bash
-forge test -vvv
-```
-
-### Run with Fork Tests
-
-```bash
-# Set your RPC URL
-export MAINNET_RPC_URL="https://eth-mainnet.alchemyapi.io/v2/YOUR_KEY"
-
-forge test --match-contract ForkTest -vvv
-```
-
-### Generate Coverage Report
-
-```bash
-forge coverage
-```
-
-### Generate Gas Report
-
-```bash
-forge test --gas-report -vvv
-```
-
-## Contract Overview
-
-### SimpleERC20
-Standard ERC-20 token with `mint`, `transfer`, `approve`, and `transferFrom` functions.
-
-### ConstantProductAMM
-Implements a Uniswap V2-style AMM:
-- **addLiquidity()**: Deposit both tokens, receive LP tokens
-- **removeLiquidity()**: Burn LP tokens, receive proportional reserves
-- **swap()**: Trade tokens using constant product formula with 0.3% fee
-- **getAmountOut()**: Calculate expected output for a given input
-
-### LendingPool
-Implements a lending/borrowing protocol:
-- **deposit()**: Deposit collateral
-- **borrow()**: Borrow against collateral (max 75% LTV)
-- **repay()**: Repay borrowed amount
-- **withdraw()**: Withdraw collateral (if health factor > 1)
-- **liquidate()**: Liquidate undercollateralized positions
-
-## Testing Summary
-
-| Contract | Unit Tests | Fuzz Tests | Invariant Tests | Fork Tests | Total |
-|----------|-----------|------------|-----------------|------------|-------|
-| SimpleERC20 | 18 | 3 | 3 | — | 24 |
-| AMM | 20 | 2 | 1 | — | 23 |
-| LendingPool | 20 | — | — | — | 20 |
-| Fork Tests | — | — | — | 3 | 3 |
-
-## Documentation
-
-- [Fuzz Testing vs Unit Testing](docs/fuzz-vs-unit-testing.md)
-- [Fork Testing Analysis](docs/fork-testing.md)
-- [AMM Mathematical Analysis](docs/amm-mathematical-analysis.md)
-- [CI/CD Pipeline Documentation](docs/cicd-documentation.md)
-- [Lending Pool Workflow Diagram](docs/lending-pool-workflow.html)
-
-## CI/CD Pipeline
-
-The project includes a GitHub Actions pipeline that:
-1. Installs Foundry
-2. Compiles contracts
-3. Runs all tests
-4. Generates gas reports
-5. Measures test coverage
-6. Runs Slither static analysis
-
-## Author
-
-Blockchain Technologies 2 — Assignment 2 Submission
+- **Smart Contracts:** Solidity 0.8.24, OpenZeppelin v5
+- **Framework:** Foundry (forge, cast, anvil)
+- **L2:** Arbitrum Sepolia
+- **Frontend:** React 18, Vite, Wagmi v2, Viem, TanStack Query
+- **Indexing:** The Graph (AssemblyScript mappings)
+- **Testing:** Foundry (unit, fuzz, invariant, fork)

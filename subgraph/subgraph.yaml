@@ -1,0 +1,78 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: InsurancePool
+    network: arbitrum-sepolia
+    source:
+      address: "{{INSURANCE_POOL_ADDRESS}}"
+      abi: InsurancePool
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Policy
+        - Claim
+        - ProtocolStats
+      abis:
+        - name: InsurancePool
+          file: ./abis/InsurancePool.json
+      eventHandlers:
+        - event: PolicyPurchased(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handlePolicyPurchased
+        - event: PolicyTriggered(indexed uint256)
+          handler: handlePolicyTriggered
+        - event: ClaimProcessed(indexed uint256,indexed address,uint256)
+          handler: handleClaimProcessed
+      file: ./src/mappings.ts
+
+  - kind: ethereum
+    name: InsuranceGovernor
+    network: arbitrum-sepolia
+    source:
+      address: "{{GOVERNOR_ADDRESS}}"
+      abi: InsuranceGovernor
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - GovernanceProposal
+      abis:
+        - name: InsuranceGovernor
+          file: ./abis/InsuranceGovernor.json
+      eventHandlers:
+        - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
+          handler: handleProposalCreated
+        - event: VoteCast(indexed address,uint256,uint8,uint256,string)
+          handler: handleVoteCast
+        - event: ProposalExecuted(uint256)
+          handler: handleProposalExecuted
+      file: ./src/mappings.ts
+
+  - kind: ethereum
+    name: UnderwriterVault
+    network: arbitrum-sepolia
+    source:
+      address: "{{VAULT_ADDRESS}}"
+      abi: UnderwriterVault
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - UnderwriterPosition
+      abis:
+        - name: UnderwriterVault
+          file: ./abis/UnderwriterVault.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleVaultDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleVaultWithdraw
+      file: ./src/mappings.ts
