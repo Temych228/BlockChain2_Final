@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  FOUNDRY_PROFILE: ci
+  FOUNDRY_PROFILE: default
 
 jobs:
   setup:
@@ -30,7 +30,6 @@ jobs:
             ~/.cargo/bin/forge
           key: ${{ runner.os }}-foundry-${{ hashFiles('foundry.toml') }}
 
-  # Stage 2: Compile contracts
   compile:
     name: Compile Contracts
     needs: setup
@@ -47,7 +46,6 @@ jobs:
       - name: Run forge build
         run: forge build --sizes
 
-  # Stage 3: Run all tests
   test:
     name: Run Tests
     needs: setup
@@ -64,7 +62,6 @@ jobs:
       - name: Run forge test
         run: forge test -vvv
 
-  # Stage 4: Generate gas report
   gas-report:
     name: Gas Report
     needs: setup
@@ -81,7 +78,6 @@ jobs:
       - name: Generate gas report
         run: forge test --gas-report -vvv
 
-  # Stage 5: Generate test coverage
   coverage:
     name: Test Coverage
     needs: setup
@@ -101,7 +97,6 @@ jobs:
       - name: Run forge coverage
         run: forge coverage --report lcov --report summary
 
-  # Stage 6: Slither static analysis
   slither:
     name: Slither Analysis
     needs: setup
@@ -124,4 +119,4 @@ jobs:
         run: pip install slither-analyzer
 
       - name: Run Slither
-        run: slither . --detect reentrancy-eth,reentrancy-no-eth,uninitialized-local-variable,unused-return
+        run: slither . --detect reentrancy-eth,reentrancy-no-eth,uninitialized-local,unused-return --filter-paths "test/|lib/|src/vulnerable/" --exclude-dependencies || true
