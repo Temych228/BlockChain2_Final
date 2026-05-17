@@ -9,8 +9,8 @@ import "./SimpleERC20.sol";
  * @dev Supports deposit, borrow, repay, withdraw, and liquidate
  */
 contract LendingPool {
-    SimpleERC20 public collateralToken;
-    SimpleERC20 public borrowToken;
+    address public immutable collateralToken;
+    address public immutable borrowToken;
 
     uint256 public constant MAX_LTV_BPS = 7500; // 75%
     uint256 public constant BASIS_POINTS = 10000;
@@ -34,7 +34,9 @@ contract LendingPool {
     event Withdraw(address indexed user, uint256 amount);
     event Borrow(address indexed user, uint256 amount);
     event Repay(address indexed user, uint256 amount);
-    event Liquidate(address indexed liquidator, address indexed borrower, uint256 repayAmount, uint256 collateralSeized);
+    event Liquidate(
+        address indexed liquidator, address indexed borrower, uint256 repayAmount, uint256 collateralSeized
+    );
 
     error ZeroAmount();
     error InsufficientCollateral();
@@ -172,14 +174,14 @@ contract LendingPool {
     /**
      * @notice Get user position details
      */
-    function getPosition(address user) external view returns (
-        uint256 deposited,
-        uint256 borrowed,
-        uint256 healthFactor
-    ) {
+    function getPosition(address user)
+        external
+        view
+        returns (uint256 deposited, uint256 borrowed, uint256 healthFactor)
+    {
         UserPosition storage pos = positions[user];
         uint256 accruedDebt = _calculateAccruedDebt(pos);
-        
+
         deposited = pos.deposited;
         borrowed = accruedDebt;
         healthFactor = _calculateHealthFactor(deposited, accruedDebt);
@@ -202,8 +204,7 @@ contract LendingPool {
         uint256 timeElapsed = block.timestamp - pos.lastInterestUpdate;
         if (timeElapsed == 0) return pos.borrowed;
 
-        uint256 interest = (pos.borrowed * ANNUAL_INTEREST_RATE_BPS * timeElapsed) / 
-            (BASIS_POINTS * SECONDS_PER_YEAR);
+        uint256 interest = (pos.borrowed * ANNUAL_INTEREST_RATE_BPS * timeElapsed) / (BASIS_POINTS * SECONDS_PER_YEAR);
         return pos.borrowed + interest;
     }
 }

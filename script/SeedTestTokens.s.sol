@@ -19,8 +19,8 @@ contract SeedTestTokens is Script {
         address usdc = 0x0F5730CdDE59df09b142072B9C9b5e4a1e894a7C;
         address idao = 0xb06eCBf6dC4Ca68716b400bfC1Aacbae0d7e487f;
 
-        uint256 usdcAmount = 10_000 * 1e6;   // 10,000 USDC
-        uint256 idaoAmount = 10_000 * 1e18;   // 10,000 IDAO
+        uint256 usdcAmount = 10_000 * 1e6; // 10,000 USDC
+        uint256 idaoAmount = 10_000 * 1e18; // 10,000 IDAO
 
         console.log("Seeding tokens to:", target);
 

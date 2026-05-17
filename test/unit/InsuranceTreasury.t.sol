@@ -44,15 +44,13 @@ contract InsuranceTreasuryTest is Test {
     function test_WithdrawERC20_Unauthorized_Reverts() public {
         bytes32 role = treasury.DEFAULT_ADMIN_ROLE();
         vm.prank(nobody);
-        vm.expectRevert(
-            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, nobody, role)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, nobody, role));
         treasury.withdrawERC20(address(usdc), recipient, 100e6);
     }
 
     function test_ReceiveETH() public {
         vm.deal(address(this), 1 ether);
-        (bool ok, ) = address(treasury).call{value: 1 ether}("");
+        (bool ok,) = address(treasury).call{value: 1 ether}("");
         assertTrue(ok);
         assertEq(address(treasury).balance, 1 ether);
     }
@@ -79,9 +77,7 @@ contract InsuranceTreasuryTest is Test {
         vm.deal(address(treasury), 1 ether);
         bytes32 role = treasury.DEFAULT_ADMIN_ROLE();
         vm.prank(nobody);
-        vm.expectRevert(
-            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, nobody, role)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, nobody, role));
         treasury.withdrawETH(payable(recipient), 1 ether);
     }
 

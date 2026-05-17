@@ -59,7 +59,7 @@ contract GovernorLifecycleTest is Test {
         token.transfer(proposer, 200_000e18); // 2% — above 1% threshold
         token.transfer(voter1, 3_000_000e18); // 30%
         token.transfer(voter2, 2_000_000e18); // 20%
-        token.transfer(voter3, 500_000e18);   // 5%
+        token.transfer(voter3, 500_000e18); // 5%
 
         vm.stopPrank();
 
@@ -85,12 +85,8 @@ contract GovernorLifecycleTest is Test {
 
     function testFullGovernanceLifecycle() public {
         // 1. PROPOSE: treasury.withdrawERC20(usdc, recipient, 10_000 USDC)
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildWithdrawProposal(10_000e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildWithdrawProposal(10_000e6);
 
         vm.prank(proposer);
         uint256 proposalId = governor.propose(targets, values, calldatas, description);
@@ -112,9 +108,7 @@ contract GovernorLifecycleTest is Test {
         (uint256 againstVotes, uint256 forVotes, uint256 abstainVotes) = governor.proposalVotes(proposalId);
         assertGt(forVotes, againstVotes, "for votes should exceed against");
         assertGt(
-            forVotes + abstainVotes,
-            governor.quorum(governor.proposalSnapshot(proposalId)),
-            "quorum should be reached"
+            forVotes + abstainVotes, governor.quorum(governor.proposalSnapshot(proposalId)), "quorum should be reached"
         );
 
         // 4. WAIT: skip voting period (1 week)
@@ -147,12 +141,8 @@ contract GovernorLifecycleTest is Test {
     function testProposal_BelowThreshold_Reverts() public {
         address nobody = makeAddr("nobody");
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildWithdrawProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildWithdrawProposal(100e6);
 
         vm.prank(nobody);
         vm.expectRevert();
@@ -160,12 +150,8 @@ contract GovernorLifecycleTest is Test {
     }
 
     function testVote_AfterDeadline_Reverts() public {
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildWithdrawProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildWithdrawProposal(100e6);
 
         vm.prank(proposer);
         uint256 proposalId = governor.propose(targets, values, calldatas, description);
@@ -179,12 +165,8 @@ contract GovernorLifecycleTest is Test {
     }
 
     function testExecute_BeforeTimelockDelay_Reverts() public {
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildWithdrawProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildWithdrawProposal(100e6);
 
         vm.prank(proposer);
         uint256 proposalId = governor.propose(targets, values, calldatas, description);
@@ -229,12 +211,7 @@ contract GovernorLifecycleTest is Test {
     function _buildWithdrawProposal(uint256 amount)
         internal
         view
-        returns (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        )
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
     {
         targets = new address[](1);
         values = new uint256[](1);

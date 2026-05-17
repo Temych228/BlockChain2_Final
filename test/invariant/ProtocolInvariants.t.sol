@@ -129,54 +129,32 @@ contract ProtocolInvariantTest is StdInvariant, Test {
     ///         Premiums add to totalAssets, and withdrawals can exceed deposits when
     ///         premiums boost share value. The vault USDC balance is the ultimate truth.
     function invariant_VaultSolvency() public view {
-        assertGe(
-            vault.totalAssets(),
-            0,
-            "Vault totalAssets must never be negative (impossible with uint256)"
-        );
+        assertGe(vault.totalAssets(), 0, "Vault totalAssets must never be negative (impossible with uint256)");
         // The vault should always have enough USDC to cover its totalAssets
         assertGe(
-            usdc.balanceOf(address(vault)),
-            vault.totalAssets(),
-            "Vault must be solvent: USDC balance >= totalAssets"
+            usdc.balanceOf(address(vault)), vault.totalAssets(), "Vault must be solvent: USDC balance >= totalAssets"
         );
     }
 
     /// @notice INVARIANT 2: Sum of all collateral positions == CollateralManager's USDC balance.
     function invariant_CollateralAccounting() public view {
-        assertEq(
-            cm.totalCollateral(),
-            usdc.balanceOf(address(cm)),
-            "Total collateral must match USDC balance"
-        );
+        assertEq(cm.totalCollateral(), usdc.balanceOf(address(cm)), "Total collateral must match USDC balance");
     }
 
     /// @notice INVARIANT 3: Share price never decreases (premiums only add to totalAssets).
     function invariant_SharePriceNeverDecreases() public view {
         if (vault.totalSupply() == 0) return;
         uint256 currentPPS = vault.convertToAssets(1e6);
-        assertGe(
-            currentPPS,
-            handler.initialPricePerShare(),
-            "Price per share must never decrease"
-        );
+        assertGe(currentPPS, handler.initialPricePerShare(), "Price per share must never decrease");
     }
 
     /// @notice INVARIANT 4: GovernanceToken total supply never exceeds 100M cap.
     function invariant_TotalSupplyBelowCap() public view {
-        assertLe(
-            token.totalSupply(),
-            100_000_000e18,
-            "Total supply must not exceed hard cap"
-        );
+        assertLe(token.totalSupply(), 100_000_000e18, "Total supply must not exceed hard cap");
     }
 
     /// @notice INVARIANT 5: Vault USDC balance >= totalAssets (vault is never insolvent).
     function invariant_VaultUSDCBalance() public view {
-        assertGe(
-            usdc.balanceOf(address(vault)),
-            vault.totalAssets(),
-            "Vault USDC balance must be >= totalAssets"
-        );
+        assertGe(usdc.balanceOf(address(vault)), vault.totalAssets(), "Vault USDC balance must be >= totalAssets");
     }
 }

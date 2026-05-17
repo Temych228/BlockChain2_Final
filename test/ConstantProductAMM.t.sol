@@ -12,10 +12,10 @@ contract AMMTest is Test {
     event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB, uint256 liquidity);
     event Swap(address indexed trader, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    SimpleERC20 public tokenA;
-    SimpleERC20 public tokenB;
+    SimpleERC20 public immutable tokenA;
+    SimpleERC20 public immutable tokenB;
     ConstantProductAMM public amm;
-    LPToken public lpToken;
+    LPToken public immutable lpToken;
 
     address public alice = makeAddr("alice");
     address public bob = makeAddr("bob");
@@ -36,7 +36,10 @@ contract AMMTest is Test {
         tokenB.mint(charlie, 10_000 ether);
     }
 
-    function _approveAndAddLiquidity(address user, uint256 amountA, uint256 amountB) internal returns (uint256 liquidity) {
+    function _approveAndAddLiquidity(address user, uint256 amountA, uint256 amountB)
+        internal
+        returns (uint256 liquidity)
+    {
         vm.prank(user);
         tokenA.approve(address(amm), amountA);
         vm.prank(user);
@@ -70,7 +73,7 @@ contract AMMTest is Test {
 
     function test_AddLiquiditySubsequentProvider() public {
         _approveAndAddLiquidity(alice, 1000 ether, 1000 ether);
-        
+
         uint256 liquidityBob = _approveAndAddLiquidity(bob, 500 ether, 500 ether);
 
         assertGt(liquidityBob, 0);
@@ -85,7 +88,7 @@ contract AMMTest is Test {
         tokenA.approve(address(amm), 0);
         vm.prank(alice);
         tokenB.approve(address(amm), 100 ether);
-        
+
         vm.expectRevert(ConstantProductAMM.ZeroAmount.selector);
         vm.prank(alice);
         amm.addLiquidity(0, 100 ether, 0);
@@ -139,22 +142,22 @@ contract AMMTest is Test {
     }
 
     function test_RemoveLiquidityEmitsEvent() public {
-    _approveAndAddLiquidity(alice, 1000 ether, 1000 ether);
-    uint256 lpBalance = lpToken.balanceOf(alice);
+        _approveAndAddLiquidity(alice, 1000 ether, 1000 ether);
+        uint256 lpBalance = lpToken.balanceOf(alice);
 
-    vm.prank(alice);
-    lpToken.approve(address(amm), lpBalance);
+        vm.prank(alice);
+        lpToken.approve(address(amm), lpBalance);
 
-    uint256 totalSupply = lpToken.totalSupply();
-    uint256 expectedA = (lpBalance * amm.reserveA()) / totalSupply;
-    uint256 expectedB = (lpBalance * amm.reserveB()) / totalSupply;
+        uint256 totalSupply = lpToken.totalSupply();
+        uint256 expectedA = (lpBalance * amm.reserveA()) / totalSupply;
+        uint256 expectedB = (lpBalance * amm.reserveB()) / totalSupply;
 
-    vm.expectEmit(true, false, false, true);
-    emit LiquidityRemoved(alice, expectedA, expectedB, lpBalance);
-    vm.prank(alice);
-    amm.removeLiquidity(lpBalance, 0, 0);
+        vm.expectEmit(true, false, false, true);
+        emit LiquidityRemoved(alice, expectedA, expectedB, lpBalance);
+        vm.prank(alice);
+        amm.removeLiquidity(lpBalance, 0, 0);
     }
-    
+
     function test_RemoveLiquidityZeroAmountReverts() public {
         vm.expectRevert(ConstantProductAMM.ZeroAmount.selector);
         vm.prank(alice);
@@ -311,8 +314,8 @@ contract AMMTest is Test {
     // ========== FUZZ TESTS ==========
 
     function testFuzz_AddLiquidity(uint256 amountA, uint256 amountB) public {
-    amountA = bound(amountA, 1 ether, 5_000 ether);
-    amountB = bound(amountB, 1 ether, 5_000 ether);
+        amountA = bound(amountA, 1 ether, 5_000 ether);
+        amountB = bound(amountB, 1 ether, 5_000 ether);
 
         uint256 liquidity = _approveAndAddLiquidity(alice, amountA, amountB);
 

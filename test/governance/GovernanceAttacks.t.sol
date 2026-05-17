@@ -73,12 +73,8 @@ contract GovernanceAttacksTest is Test {
         // In the SAME timestamp, attempt to propose
         // Governor.propose checks getVotes(proposer, clock() - 1)
         // Since delegation just happened at clock(), getPastVotes(attacker, clock()-1) = 0
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildProposal(100e6);
 
         vm.prank(attacker);
         vm.expectRevert();
@@ -98,12 +94,8 @@ contract GovernanceAttacksTest is Test {
         vm.warp(block.timestamp + 2);
 
         // Propose (tinyVoter has > proposalThreshold)
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildProposal(100e6);
 
         vm.prank(tinyVoter);
         uint256 proposalId = governor.propose(targets, values, calldatas, description);
@@ -134,12 +126,8 @@ contract GovernanceAttacksTest is Test {
         // Spammer has 0 tokens
         assertEq(token.balanceOf(spammer), 0);
 
-        (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        ) = _buildProposal(100e6);
+        (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description) =
+            _buildProposal(100e6);
 
         vm.prank(spammer);
         vm.expectRevert();
@@ -151,12 +139,7 @@ contract GovernanceAttacksTest is Test {
     function _buildProposal(uint256 amount)
         internal
         view
-        returns (
-            address[] memory targets,
-            uint256[] memory values,
-            bytes[] memory calldatas,
-            string memory description
-        )
+        returns (address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
     {
         targets = new address[](1);
         values = new uint256[](1);

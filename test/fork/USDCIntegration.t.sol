@@ -19,7 +19,8 @@ contract USDCForkTest is Test {
     address user = makeAddr("forkUser");
 
     function setUp() public {
-        try vm.activeFork() returns (uint256) {} catch {
+        try vm.activeFork() returns (uint256) {}
+        catch {
             vm.skip(true);
         }
 

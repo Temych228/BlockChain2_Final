@@ -46,9 +46,7 @@ contract ChainlinkOracleAdapterTest is Test {
 
     function test_GetPrice_Reverts_IncompleteRound() public {
         mock.setRoundData(10, 9);
-        vm.expectRevert(
-            abi.encodeWithSelector(ChainlinkOracleAdapter.IncompleteRound.selector, uint80(10), uint80(9))
-        );
+        vm.expectRevert(abi.encodeWithSelector(ChainlinkOracleAdapter.IncompleteRound.selector, uint80(10), uint80(9)));
         adapter.getPrice();
     }
 

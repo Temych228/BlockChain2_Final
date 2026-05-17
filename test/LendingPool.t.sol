@@ -11,7 +11,9 @@ contract LendingPoolTest is Test {
     event Withdraw(address indexed user, uint256 amount);
     event Borrow(address indexed user, uint256 amount);
     event Repay(address indexed user, uint256 amount);
-    event Liquidate(address indexed liquidator, address indexed borrower, uint256 repayAmount, uint256 collateralSeized);
+    event Liquidate(
+        address indexed liquidator, address indexed borrower, uint256 repayAmount, uint256 collateralSeized
+    );
 
     SimpleERC20 public collateralToken;
     SimpleERC20 public borrowToken;
@@ -133,14 +135,13 @@ contract LendingPoolTest is Test {
 
     function test_BorrowWithinLTV() public {
         _deposit(alice, 1000 ether);
-        
+
         // Max borrow = 1000 * 0.75 = 750
         _borrow(alice, 500 ether);
 
         (, uint256 borrowed,) = pool.getPosition(alice);
         assertEq(borrowed, 500 ether);
         assertEq(borrowToken.balanceOf(alice), 10_500 ether);
-
     }
 
     function test_BorrowExceedsLTVReverts() public {
@@ -209,28 +210,28 @@ contract LendingPoolTest is Test {
     // ========== LIQUIDATION TESTS ==========
 
     function test_LiquidateUndercollateralized() public {
-    _deposit(alice, 1000 ether);
-    _borrow(alice, 749 ether);
+        _deposit(alice, 1000 ether);
+        _borrow(alice, 749 ether);
 
-    vm.warp(block.timestamp + 31536000 * 43 / 10);
+        vm.warp(block.timestamp + 31536000 * 43 / 10);
 
-    (, , uint256 healthFactor) = pool.getPosition(alice);
-    assertLt(healthFactor, 1e18, "HF should be below 1");
+        (,, uint256 healthFactor) = pool.getPosition(alice);
+        assertLt(healthFactor, 1e18, "HF should be below 1");
 
-    uint256 liquidatorBalanceBefore = collateralToken.balanceOf(charlie);
+        uint256 liquidatorBalanceBefore = collateralToken.balanceOf(charlie);
 
-    vm.prank(charlie);
-    borrowToken.approve(address(pool), type(uint256).max);
+        vm.prank(charlie);
+        borrowToken.approve(address(pool), type(uint256).max);
 
-    borrowToken.mint(charlie, 10_000 ether);
+        borrowToken.mint(charlie, 10_000 ether);
 
-    vm.prank(charlie);
-    pool.liquidate(alice);
+        vm.prank(charlie);
+        pool.liquidate(alice);
 
-    assertGt(collateralToken.balanceOf(charlie), liquidatorBalanceBefore);
-    (, uint256 newBorrowed,) = pool.getPosition(alice);
-    assertEq(newBorrowed, 0);
-}
+        assertGt(collateralToken.balanceOf(charlie), liquidatorBalanceBefore);
+        (, uint256 newBorrowed,) = pool.getPosition(alice);
+        assertEq(newBorrowed, 0);
+    }
 
     function test_LiquidateHealthyPositionReverts() public {
         _deposit(alice, 1000 ether);
@@ -270,7 +271,8 @@ contract LendingPoolTest is Test {
         vm.warp(block.timestamp + 15768000);
 
         (, uint256 borrowedAfter,) = pool.getPosition(alice);
-        uint256 expectedInterest = (700 ether * 500 * 15768000) / (10000 * 31536000);        assertEq(borrowedAfter, 700 ether + expectedInterest);
+        uint256 expectedInterest = (700 ether * 500 * 15768000) / (10000 * 31536000);
+        assertEq(borrowedAfter, 700 ether + expectedInterest);
     }
 
     // ========== EDGE CASES ==========
@@ -280,7 +282,7 @@ contract LendingPoolTest is Test {
         _deposit(alice, 1000 ether);
         _borrow(alice, 500 ether);
         _repay(alice, 500 ether);
-        
+
         vm.prank(alice);
         pool.withdraw(1000 ether);
 

@@ -10,9 +10,9 @@ import "./LPToken.sol";
  * @dev Implements Uniswap V2-style AMM with 0.3% swap fee
  */
 contract ConstantProductAMM {
-    SimpleERC20 public tokenA;
-    SimpleERC20 public tokenB;
-    LPToken public lpToken;
+    SimpleERC20 public immutable tokenA;
+    SimpleERC20 public immutable tokenB;
+    LPToken public immutable lpToken;
 
     uint256 public reserveA;
     uint256 public reserveB;
@@ -84,9 +84,9 @@ contract ConstantProductAMM {
      * @return amountA Amount of tokenA returned
      * @return amountB Amount of tokenB returned
      */
-    function removeLiquidity(uint256 liquidity, uint256 minAmountA, uint256 minAmountB) 
-        external 
-        returns (uint256 amountA, uint256 amountB) 
+    function removeLiquidity(uint256 liquidity, uint256 minAmountA, uint256 minAmountB)
+        external
+        returns (uint256 amountA, uint256 amountB)
     {
         if (liquidity == 0) revert ZeroAmount();
         if (lpToken.balanceOf(msg.sender) < liquidity) revert InsufficientLiquidity();

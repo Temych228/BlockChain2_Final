@@ -41,8 +41,7 @@ contract VerifyDeployment is Script {
         // 1. InsurancePool DEFAULT_ADMIN_ROLE holder
         _check(
             "InsurancePool admin includes deployer or Timelock",
-            pool.hasRole(pool.DEFAULT_ADMIN_ROLE(), timelockAddr)
-                || pool.hasRole(pool.DEFAULT_ADMIN_ROLE(), msg.sender)
+            pool.hasRole(pool.DEFAULT_ADMIN_ROLE(), timelockAddr) || pool.hasRole(pool.DEFAULT_ADMIN_ROLE(), msg.sender)
         );
 
         // 2. TimelockController min delay == 2 days
@@ -58,21 +57,15 @@ contract VerifyDeployment is Script {
         _check("InsuranceGovernor.quorumNumerator() == 4", governor.quorumNumerator() == 4);
 
         // 6. InsuranceGovernor proposal threshold == 100_000e18
-        _check(
-            "InsuranceGovernor.proposalThreshold() == 100_000e18", governor.proposalThreshold() == 100_000e18
-        );
+        _check("InsuranceGovernor.proposalThreshold() == 100_000e18", governor.proposalThreshold() == 100_000e18);
 
         // 7. Timelock has PROPOSER_ROLE for Governor
         _check(
-            "Timelock PROPOSER_ROLE granted to Governor",
-            timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor))
+            "Timelock PROPOSER_ROLE granted to Governor", timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor))
         );
 
         // 8. Timelock has EXECUTOR_ROLE for address(0) (open execution)
-        _check(
-            "Timelock EXECUTOR_ROLE granted to address(0)",
-            timelock.hasRole(timelock.EXECUTOR_ROLE(), address(0))
-        );
+        _check("Timelock EXECUTOR_ROLE granted to address(0)", timelock.hasRole(timelock.EXECUTOR_ROLE(), address(0)));
 
         // 9. Deployer no longer has DEFAULT_ADMIN_ROLE on Timelock
         _check(

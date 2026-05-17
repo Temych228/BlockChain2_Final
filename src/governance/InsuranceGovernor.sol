@@ -5,7 +5,9 @@ import {Governor, IGovernor} from "@openzeppelin/contracts/governance/Governor.s
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {GovernorVotesQuorumFraction} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import {
+    GovernorVotesQuorumFraction
+} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import {GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
@@ -48,11 +50,7 @@ contract InsuranceGovernor is
     /// @param _timelock The TimelockController that controls treasury and critical operations.
     constructor(IVotes _token, TimelockController _timelock)
         Governor("InsuranceGovernor")
-        GovernorSettings(
-            uint48(1 days),
-            uint32(1 weeks),
-            100_000e18
-        )
+        GovernorSettings(uint48(1 days), uint32(1 weeks), 100_000e18)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)
@@ -97,12 +95,7 @@ contract InsuranceGovernor is
     }
 
     /// @inheritdoc GovernorTimelockControl
-    function state(uint256 proposalId)
-        public
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (ProposalState)
-    {
+    function state(uint256 proposalId) public view override(Governor, GovernorTimelockControl) returns (ProposalState) {
         return super.state(proposalId);
     }
 

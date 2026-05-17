@@ -11,7 +11,6 @@ import {MockERC20} from "../mocks/MockERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-
 contract MockOracle2 {
     function getPrice() external view returns (uint256, uint256) {
         return (2000e8, block.timestamp);
@@ -45,7 +44,12 @@ contract InsurancePoolIntegrationTest is Test {
         InsurancePool impl = new InsurancePool();
         bytes memory initData = abi.encodeWithSelector(
             InsurancePool.initialize.selector,
-            address(vault), address(cm), address(nft), address(oracle), address(usdc), admin
+            address(vault),
+            address(cm),
+            address(nft),
+            address(oracle),
+            address(usdc),
+            admin
         );
         ERC1967Proxy proxy = new ERC1967Proxy(address(impl), initData);
         pool = InsurancePool(address(proxy));
@@ -150,8 +154,8 @@ contract InsurancePoolIntegrationTest is Test {
         assertEq(p2, 1);
         assertEq(pool.nextPolicyId(), 2);
 
-        (address h1,,,,, ) = pool.policies(p1);
-        (address h2,,,,, ) = pool.policies(p2);
+        (address h1,,,,,) = pool.policies(p1);
+        (address h2,,,,,) = pool.policies(p2);
         assertEq(h1, alice);
         assertEq(h2, bob);
     }

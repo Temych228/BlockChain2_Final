@@ -28,7 +28,8 @@ contract GovernanceForkTest is Test {
     address recipient = makeAddr("recipient");
 
     function setUp() public {
-        try vm.activeFork() returns (uint256) {} catch {
+        try vm.activeFork() returns (uint256) {}
+        catch {
             vm.skip(true);
         }
 
@@ -77,10 +78,7 @@ contract GovernanceForkTest is Test {
 
         targets[0] = address(treasury);
         values[0] = 0;
-        calldatas[0] = abi.encodeCall(
-            InsuranceTreasury.withdrawERC20,
-            (USDC, recipient, 1_000e6)
-        );
+        calldatas[0] = abi.encodeCall(InsuranceTreasury.withdrawERC20, (USDC, recipient, 1_000e6));
         string memory desc = "Transfer 1000 USDC from treasury on fork";
 
         // Propose

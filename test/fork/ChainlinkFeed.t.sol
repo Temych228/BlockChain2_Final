@@ -24,7 +24,8 @@ contract ChainlinkFeedForkTest is Test {
 
     function setUp() public {
         // Only run on a fork — skip if no fork context
-        try vm.activeFork() returns (uint256) {} catch {
+        try vm.activeFork() returns (uint256) {}
+        catch {
             vm.skip(true);
         }
         feed = IAggregatorV3(ETH_USD_FEED);
@@ -52,17 +53,14 @@ contract ChainlinkFeedForkTest is Test {
 
     /// @notice After warping far into the future, the feed data becomes stale.
     function test_StalenessDetection() public {
-        (, , , uint256 updatedAt,) = feed.latestRoundData();
+        (,,, uint256 updatedAt,) = feed.latestRoundData();
         uint256 maxAge = 3600; // 1 hour staleness window
 
         // Warp 2 hours past the last update
         vm.warp(updatedAt + maxAge + 1 hours);
 
-        (, , , uint256 updatedAt2,) = feed.latestRoundData();
+        (,,, uint256 updatedAt2,) = feed.latestRoundData();
         // The updatedAt hasn't changed (we just warped time, not the feed)
-        assertTrue(
-            block.timestamp - updatedAt2 > maxAge,
-            "Feed should be detected as stale after time warp"
-        );
+        assertTrue(block.timestamp - updatedAt2 > maxAge, "Feed should be detected as stale after time warp");
     }
 }
