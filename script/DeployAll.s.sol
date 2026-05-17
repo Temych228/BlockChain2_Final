@@ -112,25 +112,25 @@ contract DeployAll is Script {
             console.log("9.  CollateralManager:", d.cm);
         }
 
+        // 10. PolicyNFT (must deploy before InsurancePool which needs its address)
+        {
+            PolicyNFT n = new PolicyNFT("https://api.insuredao.io/policy/", deployer);
+            d.nft = address(n);
+            console.log("10. PolicyNFT:", d.nft);
+        }
+
         // 11. InsurancePool (UUPS proxy)
         {
             InsurancePool impl = new InsurancePool();
             d.poolImpl = address(impl);
 
             bytes memory initData = abi.encodeWithSelector(
-                InsurancePool.initialize.selector, d.vault, d.cm, address(0), d.oracle, d.usdc, deployer
+                InsurancePool.initialize.selector, d.vault, d.cm, d.nft, d.oracle, d.usdc, deployer
             );
             ERC1967Proxy px = new ERC1967Proxy(d.poolImpl, initData);
             d.poolProxy = address(px);
             console.log("11. InsurancePool impl:", d.poolImpl);
             console.log("    InsurancePool proxy:", d.poolProxy);
-        }
-
-        // 12. PolicyNFT
-        {
-            PolicyNFT n = new PolicyNFT("https://api.insuredao.io/policy/", deployer);
-            d.nft = address(n);
-            console.log("12. PolicyNFT:", d.nft);
         }
 
         // 13. PolicyFactory

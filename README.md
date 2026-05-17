@@ -25,6 +25,7 @@ See [docs/architecture.md](docs/architecture.md) for detailed diagrams and desig
 
 ## Deployed Contracts (Arbitrum Sepolia)
 
+<<<<<<< HEAD
 | Contract | Address | Verified |
 |---|---|---|
 | InsurancePool (Proxy) | `TBD` | - |
@@ -37,6 +38,20 @@ See [docs/architecture.md](docs/architecture.md) for detailed diagrams and desig
 | InsuranceTreasury | `TBD` | - |
 
 > Deploy with `make deploy-arbitrum` and fill in addresses after deployment.
+=======
+| Contract | Address | Arbiscan |
+|---|---|---|
+| InsurancePool (Proxy) | `0xF293eD1ABd74D70A012c69b15f22C20Df4c8858C` | [View](https://sepolia.arbiscan.io/address/0xF293eD1ABd74D70A012c69b15f22C20Df4c8858C) |
+| UnderwriterVault | `0xB0Cb5ECf100d8668A250118e64D6DA7f728E4865` | [View](https://sepolia.arbiscan.io/address/0xB0Cb5ECf100d8668A250118e64D6DA7f728E4865) |
+| CollateralManager | `0xaAa36a7DEb22fdd9e3A5613f378405655cACc7bA` | [View](https://sepolia.arbiscan.io/address/0xaAa36a7DEb22fdd9e3A5613f378405655cACc7bA) |
+| PolicyNFT | `0xa3Fc2415c383c58f5f27FcE5f1d26Cc54Dc9cEa6` | [View](https://sepolia.arbiscan.io/address/0xa3Fc2415c383c58f5f27FcE5f1d26Cc54Dc9cEa6) |
+| GovernanceToken (IDAO) | `0xb06eCBf6dC4Ca68716b400bfC1Aacbae0d7e487f` | [View](https://sepolia.arbiscan.io/address/0xb06eCBf6dC4Ca68716b400bfC1Aacbae0d7e487f) |
+| InsuranceGovernor | `0xD01F3b6e16828628746e0C6Be4258B81572ba549` | [View](https://sepolia.arbiscan.io/address/0xD01F3b6e16828628746e0C6Be4258B81572ba549) |
+| TimelockController | `0x47089891c1a1e62A0bD880949fEa592056237970` | [View](https://sepolia.arbiscan.io/address/0x47089891c1a1e62A0bD880949fEa592056237970) |
+| InsuranceTreasury | `0x032E146D35a5D643A18Deac4C3166592aCf1dB70` | [View](https://sepolia.arbiscan.io/address/0x032E146D35a5D643A18Deac4C3166592aCf1dB70) |
+| MockUSDC | `0x0F5730CdDE59df09b142072B9C9b5e4a1e894a7C` | [View](https://sepolia.arbiscan.io/address/0x0F5730CdDE59df09b142072B9C9b5e4a1e894a7C) |
+| PolicyFactory | `0xDcDd4c95a9c16C259E1f1c5824F65D0A32e89714` | [View](https://sepolia.arbiscan.io/address/0xDcDd4c95a9c16C259E1f1c5824F65D0A32e89714) |
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 
 ## Quick Start
 
@@ -78,6 +93,7 @@ make verify-deployment
 
 ## Frontend
 
+<<<<<<< HEAD
 ```bash
 cd frontend
 npm install
@@ -86,11 +102,54 @@ npm run dev
 ```
 
 Features:
+=======
+### Quick Start (for reviewers/testers)
+
+The contracts are already deployed to Arbitrum Sepolia. To test the frontend:
+
+```bash
+# 1. Install frontend dependencies
+cd frontend
+npm install
+
+# 2. Start the dev server
+npm run dev
+# Open http://localhost:5174
+```
+
+### Getting Test Tokens
+
+After connecting your MetaMask wallet (on Arbitrum Sepolia network), you need USDC and IDAO tokens.
+Run this from the project root (replace `0xYOUR_WALLET` with your MetaMask address):
+
+```bash
+make seed-tokens WALLET=0xYOUR_WALLET_ADDRESS
+```
+
+This mints **10,000 USDC** and **10,000 IDAO** to your wallet. You'll see balances in the navbar after refreshing.
+
+> **Note:** The deployer key (`0xac09...`) used by `seed-tokens` must have Arbitrum Sepolia ETH.
+> Fund it at a faucet if needed: deployer address is `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`.
+
+### Testing the Frontend
+
+1. **Governance page** — Click "Delegate to Myself" to activate voting power
+2. **Underwrite page** — Enter `1000` USDC → Approve → Deposit Collateral
+3. **Insure page** — Policy Type `0`, Coverage `100` USDC, Duration `30` days → Purchase Policy
+4. **Dashboard** — See your position update in real-time
+
+### Frontend Features
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 - MetaMask + WalletConnect integration
 - Purchase insurance policies (USDC approval + policy purchase)
 - Deposit collateral as underwriter
 - Governance: view proposals, cast votes, delegate tokens
 - Real-time protocol stats via The Graph subgraph
+<<<<<<< HEAD
+=======
+- Auto-refreshing balances (every 4 seconds)
+- Buffered gas pricing for Arbitrum Sepolia compatibility
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 
 ## Subgraph
 

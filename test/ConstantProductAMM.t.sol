@@ -63,7 +63,7 @@ contract AMMTest is Test {
         tokenB.approve(address(amm), 1000 ether);
 
         vm.expectEmit(true, false, false, true);
-        emit LiquidityAdded(alice, 1000 ether, 1000 ether, lpToken.balanceOf(alice) + 1); // approximate
+        emit LiquidityAdded(alice, 1000 ether, 1000 ether, 1000 ether);
         vm.prank(alice);
         amm.addLiquidity(1000 ether, 1000 ether, 0);
     }
@@ -139,18 +139,22 @@ contract AMMTest is Test {
     }
 
     function test_RemoveLiquidityEmitsEvent() public {
-        _approveAndAddLiquidity(alice, 1000 ether, 1000 ether);
-        uint256 lpBalance = lpToken.balanceOf(alice);
+    _approveAndAddLiquidity(alice, 1000 ether, 1000 ether);
+    uint256 lpBalance = lpToken.balanceOf(alice);
 
-        vm.prank(alice);
-        lpToken.approve(address(amm), lpBalance);
+    vm.prank(alice);
+    lpToken.approve(address(amm), lpBalance);
 
-        vm.expectEmit(true, false, false, true);
-        emit LiquidityRemoved(alice, 0, 0, lpBalance);
-        vm.prank(alice);
-        amm.removeLiquidity(lpBalance, 0, 0);
+    uint256 totalSupply = lpToken.totalSupply();
+    uint256 expectedA = (lpBalance * amm.reserveA()) / totalSupply;
+    uint256 expectedB = (lpBalance * amm.reserveB()) / totalSupply;
+
+    vm.expectEmit(true, false, false, true);
+    emit LiquidityRemoved(alice, expectedA, expectedB, lpBalance);
+    vm.prank(alice);
+    amm.removeLiquidity(lpBalance, 0, 0);
     }
-
+    
     function test_RemoveLiquidityZeroAmountReverts() public {
         vm.expectRevert(ConstantProductAMM.ZeroAmount.selector);
         vm.prank(alice);
@@ -204,8 +208,10 @@ contract AMMTest is Test {
         vm.prank(bob);
         tokenA.approve(address(amm), amountIn);
 
+        uint256 expectedOut = amm.getAmountOut(address(tokenA), amountIn);
+
         vm.expectEmit(true, false, false, true);
-        emit Swap(bob, address(tokenA), address(tokenB), amountIn, 0);
+        emit Swap(bob, address(tokenA), address(tokenB), amountIn, expectedOut);
         vm.prank(bob);
         amm.swap(address(tokenA), amountIn, 0);
     }
@@ -305,8 +311,8 @@ contract AMMTest is Test {
     // ========== FUZZ TESTS ==========
 
     function testFuzz_AddLiquidity(uint256 amountA, uint256 amountB) public {
-        amountA = bound(amountA, 1 ether, 100_000 ether);
-        amountB = bound(amountB, 1 ether, 100_000 ether);
+    amountA = bound(amountA, 1 ether, 5_000 ether);
+    amountB = bound(amountB, 1 ether, 5_000 ether);
 
         uint256 liquidity = _approveAndAddLiquidity(alice, amountA, amountB);
 

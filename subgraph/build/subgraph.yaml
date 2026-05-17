@@ -1,0 +1,76 @@
+specVersion: 0.0.5
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: InsurancePool
+    network: arbitrum-sepolia
+    source:
+      address: "0xF293eD1ABd74D70A012c69b15f22C20Df4c8858C"
+      abi: InsurancePool
+      startBlock: 269066593
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Policy
+        - Claim
+        - ProtocolStats
+      abis:
+        - name: InsurancePool
+          file: InsurancePool/abis/InsurancePool.json
+      eventHandlers:
+        - event: PolicyPurchased(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handlePolicyPurchased
+        - event: PolicyTriggered(indexed uint256)
+          handler: handlePolicyTriggered
+        - event: ClaimProcessed(indexed uint256,indexed address,uint256)
+          handler: handleClaimProcessed
+      file: InsurancePool/InsurancePool.wasm
+  - kind: ethereum
+    name: InsuranceGovernor
+    network: arbitrum-sepolia
+    source:
+      address: "0xD01F3b6e16828628746e0C6Be4258B81572ba549"
+      abi: InsuranceGovernor
+      startBlock: 269066593
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - GovernanceProposal
+      abis:
+        - name: InsuranceGovernor
+          file: InsuranceGovernor/abis/InsuranceGovernor.json
+      eventHandlers:
+        - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
+          handler: handleProposalCreated
+        - event: VoteCast(indexed address,uint256,uint8,uint256,string)
+          handler: handleVoteCast
+        - event: ProposalExecuted(uint256)
+          handler: handleProposalExecuted
+      file: InsurancePool/InsurancePool.wasm
+  - kind: ethereum
+    name: UnderwriterVault
+    network: arbitrum-sepolia
+    source:
+      address: "0xB0Cb5ECf100d8668A250118e64D6DA7f728E4865"
+      abi: UnderwriterVault
+      startBlock: 269066593
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - UnderwriterPosition
+      abis:
+        - name: UnderwriterVault
+          file: UnderwriterVault/abis/UnderwriterVault.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleVaultDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleVaultWithdraw
+      file: InsurancePool/InsurancePool.wasm

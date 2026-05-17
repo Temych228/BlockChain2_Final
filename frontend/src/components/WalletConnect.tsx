@@ -17,6 +17,10 @@ export function WalletConnect() {
   const { data: usdcBalance } = useBalance({
     address,
     token: ADDRESSES.usdc,
+<<<<<<< HEAD
+=======
+    query: { refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: idaoBalance } = useReadContract({
@@ -24,7 +28,11 @@ export function WalletConnect() {
     abi: GOVERNANCE_TOKEN_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: votingPower } = useReadContract({
@@ -32,7 +40,11 @@ export function WalletConnect() {
     abi: GOVERNANCE_TOKEN_ABI,
     functionName: 'getVotes',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const isWrongChain = isConnected && chain?.id !== arbitrumSepolia.id

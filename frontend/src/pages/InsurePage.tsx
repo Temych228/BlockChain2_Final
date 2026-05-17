@@ -4,6 +4,10 @@ import { useReadContract } from 'wagmi'
 import { parseUnits, formatUnits } from 'viem'
 import { ADDRESSES, INSURANCE_POOL_ABI, ERC20_ABI } from '../config/contracts'
 import { usePoliciesByHolder } from '../hooks/useSubgraph'
+<<<<<<< HEAD
+=======
+import { useBufferedGasPrice } from '../hooks/useGasPrice'
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 import { parseError } from '../utils/errors'
 
 const POLICY_STATUS_LABELS: Record<string, string> = {
@@ -26,6 +30,11 @@ export function InsurePage() {
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
+<<<<<<< HEAD
+=======
+  const gasPrice = useBufferedGasPrice()
+
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   const { data: policies, isLoading: policiesLoading, isError: policiesError } =
     usePoliciesByHolder(address)
 
@@ -34,7 +43,11 @@ export function InsurePage() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address ? [address, ADDRESSES.insurancePool] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: usdcBalance } = useReadContract({
@@ -42,7 +55,11 @@ export function InsurePage() {
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const {
@@ -80,6 +97,10 @@ export function InsurePage() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [ADDRESSES.insurancePool, parsedCoverage],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => setSuccessMsg('USDC approval confirmed.'),
@@ -97,6 +118,10 @@ export function InsurePage() {
         abi: INSURANCE_POOL_ABI,
         functionName: 'purchasePolicy',
         args: [BigInt(policyTypeId), parsedCoverage, parsedDuration],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => setSuccessMsg('Policy purchased successfully!'),

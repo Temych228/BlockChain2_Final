@@ -6,9 +6,15 @@ dataSources:
     name: InsurancePool
     network: arbitrum-sepolia
     source:
+<<<<<<< HEAD
       address: "{{INSURANCE_POOL_ADDRESS}}"
       abi: InsurancePool
       startBlock: 0
+=======
+      address: "0xF293eD1ABd74D70A012c69b15f22C20Df4c8858C"
+      abi: InsurancePool
+      startBlock: 269066593
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -33,9 +39,15 @@ dataSources:
     name: InsuranceGovernor
     network: arbitrum-sepolia
     source:
+<<<<<<< HEAD
       address: "{{GOVERNOR_ADDRESS}}"
       abi: InsuranceGovernor
       startBlock: 0
+=======
+      address: "0xD01F3b6e16828628746e0C6Be4258B81572ba549"
+      abi: InsuranceGovernor
+      startBlock: 269066593
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -58,9 +70,15 @@ dataSources:
     name: UnderwriterVault
     network: arbitrum-sepolia
     source:
+<<<<<<< HEAD
       address: "{{VAULT_ADDRESS}}"
       abi: UnderwriterVault
       startBlock: 0
+=======
+      address: "0xB0Cb5ECf100d8668A250118e64D6DA7f728E4865"
+      abi: UnderwriterVault
+      startBlock: 269066593
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

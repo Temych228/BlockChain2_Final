@@ -3,11 +3,20 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadCont
 import { parseUnits, formatUnits } from 'viem'
 import { ADDRESSES, COLLATERAL_MANAGER_ABI, ERC20_ABI } from '../config/contracts'
 import { useTopUnderwriters } from '../hooks/useSubgraph'
+<<<<<<< HEAD
+=======
+import { useBufferedGasPrice } from '../hooks/useGasPrice'
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 import { parseError } from '../utils/errors'
 
 export function UnderwritePage() {
   const { address, isConnected } = useAccount()
 
+<<<<<<< HEAD
+=======
+  const gasPrice = useBufferedGasPrice()
+
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   const [amount, setAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -17,7 +26,11 @@ export function UnderwritePage() {
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'collateralBalances',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: exposure } = useReadContract({
@@ -25,7 +38,11 @@ export function UnderwritePage() {
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'coverageExposure',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: healthFactor } = useReadContract({
@@ -33,7 +50,11 @@ export function UnderwritePage() {
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'healthFactor',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: allowance } = useReadContract({
@@ -41,7 +62,11 @@ export function UnderwritePage() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address ? [address, ADDRESSES.collateralManager] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: usdcBalance } = useReadContract({
@@ -49,7 +74,11 @@ export function UnderwritePage() {
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: topUnderwriters, isLoading: uwLoading, isError: uwError } = useTopUnderwriters()
@@ -78,6 +107,7 @@ export function UnderwritePage() {
   const needsApproval =
     allowance !== undefined && parsedAmount > 0n && (allowance as bigint) < parsedAmount
 
+<<<<<<< HEAD
   const hfValue = healthFactor !== undefined ? Number(healthFactor) : undefined
   const hfDisplay = hfValue !== undefined ? (hfValue / 10000).toFixed(2) : '—'
   const hfClass = hfValue === undefined
@@ -85,6 +115,17 @@ export function UnderwritePage() {
     : hfValue >= 15000
       ? 'health-green'
       : hfValue >= 8500
+=======
+  const hfBigInt = healthFactor !== undefined ? (healthFactor as bigint) : undefined
+  const isMaxHF = hfBigInt !== undefined && hfBigInt > 10_000_000n
+  const hfValue = hfBigInt !== undefined && !isMaxHF ? Number(hfBigInt) : undefined
+  const hfDisplay = hfBigInt === undefined ? '—' : isMaxHF ? '∞ Safe' : (hfValue! / 10000).toFixed(2)
+  const hfClass = hfBigInt === undefined
+    ? ''
+    : isMaxHF || (hfValue !== undefined && hfValue >= 15000)
+      ? 'health-green'
+      : hfValue !== undefined && hfValue >= 8500
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
         ? 'health-yellow'
         : 'health-red'
 
@@ -105,6 +146,10 @@ export function UnderwritePage() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [ADDRESSES.collateralManager, parsedAmount],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => setSuccessMsg('USDC approval confirmed.'),
@@ -122,6 +167,10 @@ export function UnderwritePage() {
         abi: COLLATERAL_MANAGER_ABI,
         functionName: 'depositCollateral',
         args: [parsedAmount],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => {
@@ -160,7 +209,11 @@ export function UnderwritePage() {
         <div className="stat-card">
           <h3>Health Factor</h3>
           <p className={`stat-value ${hfClass}`}>{hfDisplay}</p>
+<<<<<<< HEAD
           {hfValue !== undefined && hfValue < 8500 && (
+=======
+          {hfValue !== undefined && !isMaxHF && hfValue < 8500 && (
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
             <p className="stat-sub health-red">At risk of liquidation</p>
           )}
         </div>
@@ -214,7 +267,11 @@ export function UnderwritePage() {
       <section className="card">
         <h2>Top Underwriters</h2>
         {uwLoading && <p className="loading-text">Loading...</p>}
+<<<<<<< HEAD
         {uwError && <p className="error-text">Subgraph unavailable.</p>}
+=======
+        {uwError && <p className="error-text">Subgraph not deployed — top underwriters will appear here once configured.</p>}
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
         {topUnderwriters?.underwriterPositions && topUnderwriters.underwriterPositions.length > 0 && (
           <div className="table-wrap">
             <table>
@@ -222,6 +279,7 @@ export function UnderwritePage() {
                 <tr>
                   <th>Underwriter</th>
                   <th>Collateral</th>
+<<<<<<< HEAD
                   <th>Health Factor</th>
                 </tr>
               </thead>
@@ -237,6 +295,19 @@ export function UnderwritePage() {
                     </tr>
                   )
                 })}
+=======
+                  <th>Shares</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topUnderwriters.underwriterPositions.map((uw) => (
+                    <tr key={uw.id}>
+                      <td className="mono">{uw.underwriter.slice(0, 6)}...{uw.underwriter.slice(-4)}</td>
+                      <td>${formatUsdc(BigInt(uw.collateral))}</td>
+                      <td>{parseFloat(formatUnits(BigInt(uw.sharesOwned), 6)).toLocaleString()}</td>
+                    </tr>
+                  ))}
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
               </tbody>
             </table>
           </div>

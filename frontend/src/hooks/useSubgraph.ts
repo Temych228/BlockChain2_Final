@@ -2,6 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { type Address } from 'viem'
 
 const SUBGRAPH_URL = import.meta.env.VITE_SUBGRAPH_URL ?? ''
+<<<<<<< HEAD
+=======
+const isSubgraphConfigured = SUBGRAPH_URL !== '' && !SUBGRAPH_URL.includes('YOUR_ID')
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 
 interface SubgraphResponse<T> {
   data?: T
@@ -9,6 +13,12 @@ interface SubgraphResponse<T> {
 }
 
 async function querySubgraph<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+<<<<<<< HEAD
+=======
+  if (!isSubgraphConfigured) {
+    throw new Error('Subgraph not deployed yet')
+  }
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   const res = await fetch(SUBGRAPH_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +60,10 @@ export interface UnderwriterPosition {
   underwriter: string
   collateral: string
   sharesOwned: string
+<<<<<<< HEAD
   healthFactor: string
+=======
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 }
 
 export interface Claim {
@@ -83,7 +96,10 @@ export interface ProtocolStats {
     totalCollateral: string
     totalClaimsPaid: string
     totalPremiums: string
+<<<<<<< HEAD
     utilizationRate: string
+=======
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   } | null
 }
 
@@ -94,6 +110,7 @@ export function useProtocolStats() {
     queryKey: ['subgraph', 'protocolStats'],
     queryFn: () =>
       querySubgraph<ProtocolStats>(`{
+<<<<<<< HEAD
         protocolStat(id: "global") {
           id
           totalPolicies
@@ -103,6 +120,21 @@ export function useProtocolStats() {
           utilizationRate
         }
       }`),
+=======
+        protocolStat: protocolStats(id: "protocol") {
+          id
+          totalPolicies: totalPoliciesCreated
+          totalCollateral
+          totalClaimsPaid
+          totalPremiums: totalPremiumsCollected
+          lastUpdatedBlock
+        }
+      }`).then((data) => ({
+        protocolStat: data.protocolStat
+          ? { ...data.protocolStat }
+          : null,
+      })),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     refetchInterval: 30_000,
     retry: 2,
     meta: { errorMessage: 'Subgraph unavailable' },
@@ -114,7 +146,11 @@ export function usePoliciesByHolder(holder: Address | undefined) {
     queryKey: ['subgraph', 'policies', holder],
     queryFn: () =>
       querySubgraph<{ policies: Policy[] }>(
+<<<<<<< HEAD
         `query PoliciesByHolder($holder: String!) {
+=======
+        `query PoliciesByHolder($holder: Bytes!) {
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
           policies(
             where: { holder: $holder }
             orderBy: createdAt
@@ -124,9 +160,15 @@ export function usePoliciesByHolder(holder: Address | undefined) {
             holder
             policyTypeId
             coverageAmount
+<<<<<<< HEAD
             premium
             expiry
             status
+=======
+            premium: premiumPaid
+            expiry
+            status: state
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
             createdAt
           }
         }`,
@@ -144,7 +186,11 @@ export function usePendingClaims() {
     queryFn: () =>
       querySubgraph<{ claims: Claim[] }>(`{
         claims(
+<<<<<<< HEAD
           where: { status: "Pending" }
+=======
+          where: { status: PENDING }
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
           orderBy: triggeredAt
           orderDirection: desc
         ) {
@@ -153,7 +199,11 @@ export function usePendingClaims() {
           amount
           status
           triggeredAt
+<<<<<<< HEAD
           paidAt
+=======
+          paidAt: processedAt
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
         }
       }`),
     refetchInterval: 30_000,
@@ -162,6 +212,7 @@ export function usePendingClaims() {
 }
 
 export function useProposals(state?: string) {
+<<<<<<< HEAD
   const whereClause = state ? `(where: { state: "${state}" }, orderBy: createdAt, orderDirection: desc)` : '(orderBy: createdAt, orderDirection: desc)'
   return useQuery({
     queryKey: ['subgraph', 'proposals', state],
@@ -170,6 +221,18 @@ export function useProposals(state?: string) {
         proposals${whereClause} {
           id
           proposalId
+=======
+  const whereClause = state
+    ? `(where: { state: ${state} }, orderBy: createdAt, orderDirection: desc)`
+    : '(orderBy: createdAt, orderDirection: desc)'
+  return useQuery({
+    queryKey: ['subgraph', 'proposals', state],
+    queryFn: () =>
+      querySubgraph<{ governanceProposals: Proposal[] }>(`{
+        governanceProposals${whereClause} {
+          proposalId: id
+          id
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
           proposer
           description
           state
@@ -180,7 +243,11 @@ export function useProposals(state?: string) {
           endBlock
           createdAt
         }
+<<<<<<< HEAD
       }`),
+=======
+      }`).then((data) => ({ proposals: data.governanceProposals })),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     refetchInterval: 30_000,
     retry: 2,
   })
@@ -192,15 +259,24 @@ export function useTopUnderwriters() {
     queryFn: () =>
       querySubgraph<{ underwriterPositions: UnderwriterPosition[] }>(`{
         underwriterPositions(
+<<<<<<< HEAD
           orderBy: collateral
+=======
+          orderBy: collateralAmount
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
           orderDirection: desc
           first: 20
         ) {
           id
           underwriter
+<<<<<<< HEAD
           collateral
           sharesOwned
           healthFactor
+=======
+          collateral: collateralAmount
+          sharesOwned
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
         }
       }`),
     refetchInterval: 30_000,

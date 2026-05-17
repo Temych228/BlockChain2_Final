@@ -124,12 +124,13 @@ contract LendingPool {
         UserPosition storage pos = positions[msg.sender];
         uint256 accruedDebt = _calculateAccruedDebt(pos);
         uint256 repayAmount = amount > accruedDebt ? accruedDebt : amount;
+        uint256 principalRepaid = repayAmount > pos.borrowed ? pos.borrowed : repayAmount;
 
         borrowToken.transferFrom(msg.sender, address(this), repayAmount);
 
-        pos.borrowed -= repayAmount;
+        pos.borrowed -= principalRepaid;
         pos.lastInterestUpdate = block.timestamp;
-        totalBorrowed -= repayAmount;
+        totalBorrowed -= principalRepaid;
 
         emit Repay(msg.sender, repayAmount);
     }
@@ -159,7 +160,7 @@ contract LendingPool {
         pos.borrowed = 0;
         pos.deposited -= collateralSeized;
         pos.lastInterestUpdate = block.timestamp;
-        totalBorrowed -= accruedDebt;
+        totalBorrowed -= pos.borrowed;
         totalDeposited -= collateralSeized;
 
         // Send collateral to liquidator

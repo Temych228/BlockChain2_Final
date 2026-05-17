@@ -7,6 +7,10 @@ import {
   GOVERNANCE_TOKEN_ABI,
 } from '../config/contracts'
 import { useProposals } from '../hooks/useSubgraph'
+<<<<<<< HEAD
+=======
+import { useBufferedGasPrice } from '../hooks/useGasPrice'
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
 import { parseError } from '../utils/errors'
 
 const PROPOSAL_STATE_LABELS: Record<string, string> = {
@@ -55,6 +59,11 @@ export function GovernancePage() {
   const [delegateError, setDelegateError] = useState<string | null>(null)
   const [delegateSuccess, setDelegateSuccess] = useState<string | null>(null)
 
+<<<<<<< HEAD
+=======
+  const gasPrice = useBufferedGasPrice()
+
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   const { data: proposals, isLoading, isError } = useProposals(filterState)
 
   const { data: votingPower } = useReadContract({
@@ -62,7 +71,11 @@ export function GovernancePage() {
     abi: GOVERNANCE_TOKEN_ABI,
     functionName: 'getVotes',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: currentDelegate } = useReadContract({
@@ -70,7 +83,11 @@ export function GovernancePage() {
     abi: GOVERNANCE_TOKEN_ABI,
     functionName: 'delegates',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const { data: idaoBalance } = useReadContract({
@@ -78,7 +95,11 @@ export function GovernancePage() {
     abi: GOVERNANCE_TOKEN_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
+<<<<<<< HEAD
     query: { enabled: !!address },
+=======
+    query: { enabled: !!address, refetchInterval: 4000 },
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
   })
 
   const {
@@ -115,6 +136,10 @@ export function GovernancePage() {
         abi: GOVERNOR_ABI,
         functionName: 'castVote',
         args: [BigInt(proposalId), support],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => setVoteSuccess(`Vote cast on proposal #${proposalId}`),
@@ -133,6 +158,10 @@ export function GovernancePage() {
         abi: GOVERNANCE_TOKEN_ABI,
         functionName: 'delegate',
         args: [address],
+<<<<<<< HEAD
+=======
+        ...(gasPrice ? { gasPrice } : {}),
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
       },
       {
         onSuccess: () => setDelegateSuccess('Successfully delegated to yourself!'),
@@ -214,7 +243,11 @@ export function GovernancePage() {
         {voteSuccess && <div className="alert alert-success">{voteSuccess}</div>}
 
         {isLoading && <p className="loading-text">Loading proposals...</p>}
+<<<<<<< HEAD
         {isError && <p className="error-text">Subgraph unavailable — cannot load proposals.</p>}
+=======
+        {isError && <p className="error-text">Subgraph not deployed — proposals will appear here once the subgraph is configured.</p>}
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
         {proposals?.proposals && proposals.proposals.length === 0 && (
           <p className="empty-text">No proposals found.</p>
         )}

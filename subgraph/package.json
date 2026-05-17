@@ -6,7 +6,11 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
+<<<<<<< HEAD
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ insuredao",
+=======
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ final",
+>>>>>>> 7214feb461212ed7bb27ee746c049a334683c270
     "create-local": "graph create --node http://localhost:8020/ insuredao",
     "remove-local": "graph remove --node http://localhost:8020/ insuredao",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 insuredao"
