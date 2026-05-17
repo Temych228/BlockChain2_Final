@@ -2,15 +2,19 @@
 pragma solidity ^0.8.20;
 
 import "./SimpleERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title LendingPool
  * @notice A simplified lending/borrowing protocol
  * @dev Supports deposit, borrow, repay, withdraw, and liquidate
  */
-contract LendingPool {
-    address public immutable collateralToken;
-    address public immutable borrowToken;
+contract LendingPool is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
+    SimpleERC20 public immutable collateralToken;
+    SimpleERC20 public immutable borrowToken;
 
     uint256 public constant MAX_LTV_BPS = 7500; // 75%
     uint256 public constant BASIS_POINTS = 10000;
@@ -55,10 +59,10 @@ contract LendingPool {
     /**
      * @notice Deposit collateral tokens
      */
-    function deposit(uint256 amount) external {
+    function deposit(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
 
-        collateralToken.transferFrom(msg.sender, address(this), amount);
+        IERC20(address(collateralToken)).safeTransferFrom(msg.sender, address(this), amount);
 
         UserPosition storage pos = positions[msg.sender];
         pos.deposited += amount;
@@ -70,7 +74,7 @@ contract LendingPool {
     /**
      * @notice Withdraw collateral (only if health factor > 1)
      */
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
 
         UserPosition storage pos = positions[msg.sender];
@@ -87,7 +91,7 @@ contract LendingPool {
         pos.deposited = newDeposited;
         totalDeposited -= amount;
 
-        require(collateralToken.transfer(msg.sender, amount), "Transfer failed");
+        IERC20(address(collateralToken)).safeTransfer(msg.sender, amount);
 
         emit Withdraw(msg.sender, amount);
     }
@@ -95,7 +99,7 @@ contract LendingPool {
     /**
      * @notice Borrow tokens against collateral
      */
-    function borrow(uint256 amount) external {
+    function borrow(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
 
         UserPosition storage pos = positions[msg.sender];
@@ -112,7 +116,7 @@ contract LendingPool {
         pos.lastInterestUpdate = block.timestamp;
         totalBorrowed += amount;
 
-        require(borrowToken.transfer(msg.sender, amount), "Transfer failed");
+        IERC20(address(borrowToken)).safeTransfer(msg.sender, amount);
 
         emit Borrow(msg.sender, amount);
     }
@@ -120,7 +124,7 @@ contract LendingPool {
     /**
      * @notice Repay borrowed amount (partial or full)
      */
-    function repay(uint256 amount) external {
+    function repay(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
 
         UserPosition storage pos = positions[msg.sender];
@@ -128,7 +132,7 @@ contract LendingPool {
         uint256 repayAmount = amount > accruedDebt ? accruedDebt : amount;
         uint256 principalRepaid = repayAmount > pos.borrowed ? pos.borrowed : repayAmount;
 
-        borrowToken.transferFrom(msg.sender, address(this), repayAmount);
+        IERC20(address(borrowToken)).safeTransferFrom(msg.sender, address(this), repayAmount);
 
         pos.borrowed -= principalRepaid;
         pos.lastInterestUpdate = block.timestamp;
@@ -140,7 +144,7 @@ contract LendingPool {
     /**
      * @notice Liquidate an undercollateralized position
      */
-    function liquidate(address borrower) external {
+    function liquidate(address borrower) external nonReentrant {
         UserPosition storage pos = positions[borrower];
         if (pos.borrowed == 0) revert InsufficientCollateral();
 
@@ -155,18 +159,19 @@ contract LendingPool {
             collateralSeized = pos.deposited;
         }
 
-        // Transfer borrowed tokens from liquidator to pool
-        borrowToken.transferFrom(msg.sender, address(this), accruedDebt);
-
-        // Update position
+        // CEI: update state before external calls
+        uint256 previousBorrowed = pos.borrowed;
         pos.borrowed = 0;
         pos.deposited -= collateralSeized;
         pos.lastInterestUpdate = block.timestamp;
-        totalBorrowed -= pos.borrowed;
+        totalBorrowed -= previousBorrowed;
         totalDeposited -= collateralSeized;
 
+        // Transfer borrowed tokens from liquidator to pool
+        IERC20(address(borrowToken)).safeTransferFrom(msg.sender, address(this), accruedDebt);
+
         // Send collateral to liquidator
-        require(collateralToken.transfer(msg.sender, collateralSeized), "Transfer failed");
+        IERC20(address(collateralToken)).safeTransfer(msg.sender, collateralSeized);
 
         emit Liquidate(msg.sender, borrower, accruedDebt, collateralSeized);
     }

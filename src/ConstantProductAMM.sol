@@ -3,13 +3,17 @@ pragma solidity ^0.8.20;
 
 import "./SimpleERC20.sol";
 import "./LPToken.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ConstantProductAMM
  * @notice A constant product Automated Market Maker (x * y = k)
  * @dev Implements Uniswap V2-style AMM with 0.3% swap fee
  */
-contract ConstantProductAMM {
+contract ConstantProductAMM is ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     SimpleERC20 public immutable tokenA;
     SimpleERC20 public immutable tokenB;
     LPToken public immutable lpToken;
@@ -48,12 +52,15 @@ contract ConstantProductAMM {
      * @param minLiquidity Minimum LP tokens expected (slippage protection)
      * @return liquidity LP tokens minted
      */
-    function addLiquidity(uint256 amountA, uint256 amountB, uint256 minLiquidity) external returns (uint256 liquidity) {
+    function addLiquidity(uint256 amountA, uint256 amountB, uint256 minLiquidity)
+        external
+        nonReentrant
+        returns (uint256 liquidity)
+    {
         if (amountA == 0 || amountB == 0) revert ZeroAmount();
 
-        // Transfer tokens from user
-        tokenA.transferFrom(msg.sender, address(this), amountA);
-        tokenB.transferFrom(msg.sender, address(this), amountB);
+        IERC20(address(tokenA)).safeTransferFrom(msg.sender, address(this), amountA);
+        IERC20(address(tokenB)).safeTransferFrom(msg.sender, address(this), amountB);
 
         if (!initialized) {
             // First liquidity provider
@@ -86,6 +93,7 @@ contract ConstantProductAMM {
      */
     function removeLiquidity(uint256 liquidity, uint256 minAmountA, uint256 minAmountB)
         external
+        nonReentrant
         returns (uint256 amountA, uint256 amountB)
     {
         if (liquidity == 0) revert ZeroAmount();
@@ -99,8 +107,8 @@ contract ConstantProductAMM {
 
         lpToken.burn(msg.sender, liquidity);
 
-        require(tokenA.transfer(msg.sender, amountA), "Transfer A failed");
-        require(tokenB.transfer(msg.sender, amountB), "Transfer B failed");
+        IERC20(address(tokenA)).safeTransfer(msg.sender, amountA);
+        IERC20(address(tokenB)).safeTransfer(msg.sender, amountB);
 
         reserveA = tokenA.balanceOf(address(this));
         reserveB = tokenB.balanceOf(address(this));
@@ -115,7 +123,11 @@ contract ConstantProductAMM {
      * @param minAmountOut Minimum output amount (slippage protection)
      * @return amountOut Amount of output tokens received
      */
-    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut) {
+    function swap(address tokenIn, uint256 amountIn, uint256 minAmountOut)
+        external
+        nonReentrant
+        returns (uint256 amountOut)
+    {
         if (amountIn == 0) revert ZeroAmount();
         if (tokenIn != address(tokenA) && tokenIn != address(tokenB)) revert InvalidTokenAddress();
 
@@ -123,13 +135,13 @@ contract ConstantProductAMM {
         SimpleERC20 inputToken = swappingAtoB ? tokenA : tokenB;
         SimpleERC20 outputToken = swappingAtoB ? tokenB : tokenA;
 
-        inputToken.transferFrom(msg.sender, address(this), amountIn);
+        IERC20(address(inputToken)).safeTransferFrom(msg.sender, address(this), amountIn);
 
         amountOut = getAmountOut(tokenIn, amountIn);
         if (amountOut == 0) revert InsufficientLiquidity();
         if (amountOut < minAmountOut) revert SlippageTooHigh();
 
-        require(outputToken.transfer(msg.sender, amountOut), "Transfer out failed");
+        IERC20(address(outputToken)).safeTransfer(msg.sender, amountOut);
 
         reserveA = tokenA.balanceOf(address(this));
         reserveB = tokenB.balanceOf(address(this));

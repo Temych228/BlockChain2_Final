@@ -12,10 +12,10 @@ contract AMMTest is Test {
     event LiquidityRemoved(address indexed provider, uint256 amountA, uint256 amountB, uint256 liquidity);
     event Swap(address indexed trader, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 
-    SimpleERC20 public immutable tokenA;
-    SimpleERC20 public immutable tokenB;
+    SimpleERC20 public tokenA;
+    SimpleERC20 public tokenB;
+    LPToken public lpToken;
     ConstantProductAMM public amm;
-    LPToken public immutable lpToken;
 
     address public alice = makeAddr("alice");
     address public bob = makeAddr("bob");
