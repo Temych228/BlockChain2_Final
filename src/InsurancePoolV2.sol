@@ -59,6 +59,16 @@ contract InsurancePoolV2 is InsurancePool {
         policyCount++;
     }
 
+    /// @notice Seeds the pool with collateral so it can back policies.
+    /// @dev The pool calls CollateralManager.depositCollateral from its own address,
+    ///      establishing collateralBalances[address(this)] which increaseExposure checks.
+    /// @param amount The USDC amount to deposit as pool collateral.
+    function fundPool(uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        usdc.safeTransferFrom(msg.sender, address(this), amount);
+        usdc.forceApprove(address(collateralManager), amount);
+        collateralManager.depositCollateral(amount);
+    }
+
     /// @notice Returns the protocol version string.
     /// @return "V2"
     function getVersion() external pure override returns (string memory) {

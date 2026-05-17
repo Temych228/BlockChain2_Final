@@ -1,0 +1,83 @@
+"""
+InsureDAO Subgraph Schema
+Entities: Policy, UnderwriterPosition, Claim, GovernanceProposal, ProtocolStats
+"""
+
+type Policy @entity {
+  id: ID!
+  holder: Bytes!
+  policyTypeId: BigInt!
+  coverageAmount: BigInt!
+  premiumPaid: BigInt!
+  expiry: BigInt!
+  state: PolicyState!
+  createdAt: BigInt!
+  createdAtBlock: BigInt!
+  claim: Claim
+}
+
+enum PolicyState {
+  ACTIVE
+  TRIGGERED
+  CLAIMED
+  EXPIRED
+}
+
+type UnderwriterPosition @entity {
+  id: ID!
+  underwriter: Bytes!
+  collateralAmount: BigInt!
+  sharesOwned: BigInt!
+  totalDeposited: BigInt!
+  totalWithdrawn: BigInt!
+  lastUpdatedBlock: BigInt!
+}
+
+type Claim @entity {
+  id: ID!
+  policy: Policy!
+  holder: Bytes!
+  amount: BigInt!
+  triggeredAt: BigInt!
+  processedAt: BigInt
+  status: ClaimStatus!
+}
+
+enum ClaimStatus {
+  PENDING
+  PAID
+}
+
+type GovernanceProposal @entity {
+  id: ID!
+  proposer: Bytes!
+  description: String!
+  state: ProposalState!
+  forVotes: BigInt!
+  againstVotes: BigInt!
+  abstainVotes: BigInt!
+  startBlock: BigInt!
+  endBlock: BigInt!
+  executedAt: BigInt
+  createdAt: BigInt!
+}
+
+enum ProposalState {
+  PENDING
+  ACTIVE
+  SUCCEEDED
+  DEFEATED
+  QUEUED
+  EXECUTED
+  CANCELED
+}
+
+type ProtocolStats @entity {
+  id: ID!
+  totalPoliciesCreated: BigInt!
+  totalActivePolicies: BigInt!
+  totalClaimsPaid: BigInt!
+  totalPremiumsCollected: BigInt!
+  totalCollateral: BigInt!
+  lastUpdatedBlock: BigInt!
+}

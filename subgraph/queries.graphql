@@ -1,0 +1,114 @@
+# ═══════════════════════════════════════════════════════════════
+# InsureDAO — Documented GraphQL Queries
+# Required: 5 queries per rubric §3.1
+# ═══════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────
+# Query 1: Get all active policies for a specific holder
+# Usage: Dashboard — show user's active insurance policies
+# Variables: $holder (Bytes!) — the policyholder's Ethereum address
+# Returns: List of active policies with coverage details
+# ───────────────────────────────────────────────────────────────
+query GetActivePoliciesByHolder($holder: Bytes!) {
+  policies(
+    where: { holder: $holder, state: ACTIVE }
+    orderBy: createdAt
+    orderDirection: desc
+  ) {
+    id
+    coverageAmount
+    premiumPaid
+    expiry
+    policyTypeId
+    createdAt
+    state
+  }
+}
+
+# ───────────────────────────────────────────────────────────────
+# Query 2: Get top underwriter positions sorted by shares
+# Usage: Leaderboard — display largest underwriters by vault shares
+# Returns: Top 20 underwriter positions with collateral and share data
+# ───────────────────────────────────────────────────────────────
+query GetTopUnderwriters {
+  underwriterPositions(
+    orderBy: sharesOwned
+    orderDirection: desc
+    first: 20
+  ) {
+    id
+    underwriter
+    collateralAmount
+    sharesOwned
+    totalDeposited
+    totalWithdrawn
+    lastUpdatedBlock
+  }
+}
+
+# ───────────────────────────────────────────────────────────────
+# Query 3: Get all pending (triggered but unpaid) claims
+# Usage: Admin dashboard — claims awaiting processing
+# Returns: Pending claims with associated policy details
+# ───────────────────────────────────────────────────────────────
+query GetPendingClaims {
+  claims(
+    where: { status: PENDING }
+    orderBy: triggeredAt
+    orderDirection: asc
+  ) {
+    id
+    holder
+    amount
+    triggeredAt
+    status
+    policy {
+      policyTypeId
+      coverageAmount
+      holder
+    }
+  }
+}
+
+# ───────────────────────────────────────────────────────────────
+# Query 4: Get governance proposals filtered by state
+# Usage: Governance page — show proposals by lifecycle stage
+# Variables: $state (ProposalState!) — PENDING, ACTIVE, SUCCEEDED, etc.
+# Returns: Proposals with vote tallies and metadata
+# ───────────────────────────────────────────────────────────────
+query GetProposalsByState($state: ProposalState!) {
+  governanceProposals(
+    where: { state: $state }
+    orderBy: createdAt
+    orderDirection: desc
+    first: 50
+  ) {
+    id
+    proposer
+    description
+    state
+    forVotes
+    againstVotes
+    abstainVotes
+    startBlock
+    endBlock
+    executedAt
+    createdAt
+  }
+}
+
+# ───────────────────────────────────────────────────────────────
+# Query 5: Get protocol-wide statistics
+# Usage: Dashboard — protocol overview metrics
+# Returns: Singleton stats entity with aggregate counters
+# ───────────────────────────────────────────────────────────────
+query GetProtocolStats {
+  protocolStats(id: "global") {
+    totalPoliciesCreated
+    totalActivePolicies
+    totalClaimsPaid
+    totalPremiumsCollected
+    totalCollateral
+    lastUpdatedBlock
+  }
+}
